@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html style="background: linear-gradient(135deg, #004aad 0%, #cb6ce6 100%) fixed; height: 100%;">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&display=swap" rel="stylesheet">
+  <style>
+    html { -webkit-text-size-adjust: 100%; }
+    body { margin: 0; padding: 0 15px; font-family: 'Montserrat', sans-serif; color: white; display: flex; justify-content: center; min-height: 100%; box-sizing: border-box; background: transparent; }
+    .form-container { width: 100%; max-width: 900px; text-align: center; }
+    .top-spacer { height: 40px; }
+    .bottom-spacer { height: 80px; }
+    .section-header { font-size: 1.5rem; font-weight: 700; margin: 40px 0 10px 0; display: block; line-height: 1.2; }
+    .sub-instruction { margin: 0 0 30px 0; opacity: 0.8; font-size: 0.9rem; display: block; }
+    .contact-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px; margin-bottom: 20px; }
+    .field { text-align: left; }
+    label.input-label { display: block; margin-bottom: 8px; font-weight: 700; font-size: 0.85rem; margin-left: 10px; }
+    input, textarea { width: 100%; padding: 12px 20px; background: rgba(255,255,255,0.1); border: 1.5px solid white; border-radius: 50px; color: white; font-family: 'Montserrat'; font-size: 16px; outline: none; box-sizing: border-box; }
+    input::placeholder, textarea::placeholder { color: rgba(255,255,255,0.6); }
+    textarea { border-radius: 20px; resize: none; width: 100%; }
+    
+    .time-flex { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; margin-bottom: 40px; }
+    .chip-time { background: white; color: #004aad; padding: 12px 20px; border-radius: 50px; font-size: 0.85rem; font-weight: 700; cursor: pointer; border: 2px solid white; transition: 0.2s; user-select: none; }
+    .chip-time.selected { background: transparent; color: white; border-color: white; }
+    
+    .btn-submit { background: white; color: #004aad; border: none; padding: 18px 60px; border-radius: 50px; font-weight: 700; font-size: 1.1rem; cursor: pointer; margin-top: 30px; box-shadow: 0 4px 15px rgba(0,0,0,0.2); transition: 0.3s; }
+    .btn-submit:disabled { opacity: 0.7; cursor: not-allowed; background: #e0e0e0; }
+    
+    #success-msg { display: none; padding-top: 100px; }
+
+    @media (max-width: 768px) { 
+      .contact-grid { grid-template-columns: 1fr !important; gap: 20px; } 
+      .section-header { font-size: 1.3rem !important; padding: 0 5px; line-height: 1.2; }
+      .chip-time { width: 100%; max-width: 300px; } 
+    }
+  </style>
+</head>
+<body>
+
+  <div class="form-container" id="main-content">
+    <div class="top-spacer"></div>
+    <form id="formNovapiel">
+      <span class="section-header">Por favor, comparte tus datos de contacto</span>
+      <span class="sub-instruction">Para tu historial clínico, te brindaremos información personalizada vía telefónica</span>
+      
+      <div class="contact-grid">
+        <div class="field">
+          <label class="input-label">Nombre*</label>
+          <input type="text" id="nombre" required>
+        </div>
+        <div class="field">
+          <label class="input-label">Apellido*</label>
+          <input type="text" id="apellido" required>
+        </div>
+        <div class="field">
+          <label class="input-label">Teléfono*</label>
+          <input type="tel" id="telefono" required>
+        </div>
+        <div class="field">
+          <label class="input-label">Email Address</label>
+          <input type="email" id="email">
+        </div>
+      </div>
+
+      <span class="section-header">Cuéntanos, ¿cuál es tu preocupación?</span>
+      <span class="sub-instruction">Describe brevemente qué te gustaría mejorar o consultar</span>
+      <textarea id="notas" rows="3" placeholder="Me interesa... / Mi preocupación principal es..."></textarea>
+
+      <span class="section-header">Selecciona el mejor horario para contactarte</span>
+      <span class="sub-instruction">Nuestros especialistas intentarán contactarte en este horario</span>
+      
+      <div class="time-flex" id="horarios-container">
+        <div class="chip-time" onclick="selectTime(this)">Mañana Temprano (7-10am)</div>
+        <div class="chip-time" onclick="selectTime(this)">Mañana (10am-1pm)</div>
+        <div class="chip-time" onclick="selectTime(this)">Mediodía (1pm-4pm)</div>
+        <div class="chip-time" onclick="selectTime(this)">Tarde (4pm-7pm)</div>
+        <div class="chip-time" onclick="selectTime(this)">Noche (7pm-10pm)</div>
+      </div>
+
+      <button type="submit" class="btn-submit" id="btnEnvio">Enviar</button>
+      <div class="bottom-spacer"></div>
+    </form>
+  </div>
+
+  <div class="form-container" id="success-msg">
+    <div class="top-spacer"></div>
+    <h1 style="font-size: 3.5rem; font-weight: 700; margin-bottom: 10px;">¡Gracias!</h1>
+    <h2 style="font-size: 1.5rem; font-weight: 400; opacity: 0.9; margin-bottom: 30px; line-height: 1.4;">
+      Dentro de poco uno de nuestros especialistas se pondrá en contacto
+    </h2>
+    <p style="font-size: 1rem; opacity: 0.7; font-weight: 400;">
+      Ya puedes cerrar esta pestaña
+    </p>
+  </div>
+
+  <script>
+    let horarioGlobal = "";
+
+    // Función para los chips de tiempo
+    function selectTime(el) {
+        document.querySelectorAll('.chip-time').forEach(c => c.classList.remove('selected'));
+        el.classList.add('selected');
+        horarioGlobal = el.innerText;
+    }
+
+    // Manejo del envío
+    document.getElementById('formNovapiel').addEventListener('submit', (e) => {
+        e.preventDefault();
+        
+        if (!horarioGlobal) {
+            alert("Por favor selecciona un horario de preferencia.");
+            return;
+        }
+
+        // Simulación de envío (Aquí iría el fetch más adelante)
+        console.log("Enviando datos...");
+        
+        // Efecto visual: Ocultar formulario y mostrar gracias
+        document.getElementById('main-content').style.display = 'none';
+        document.getElementById('success-msg').style.display = 'block';
+    });
+  </script>
+</body>
+</html>
